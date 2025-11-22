@@ -40,4 +40,5 @@ def convert_audio():
         return jsonify({"text": "Error: " + str(e)})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
+
