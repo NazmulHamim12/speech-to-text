@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bangla Speech to Text</title>
+</head>
+<body>
+    <h2>🎤 Bangla Speech-to-Text (Web → Flask)</h2>
+
+    <button id="recordBtn">Start Recording</button>
+    <button id="stopBtn" disabled>Stop</button>
+
+    <h3>Converted Text:</h3>
+    <p id="result"></p>
+
+   
+    <script>
+        let mediaRecorder;
+let audioChunks = [];
+
+document.getElementById("recordBtn").onclick = async () => {
+    let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    
+    mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+    
+    audioChunks = [];
+    mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+
+    mediaRecorder.onstop = async () => {
+        let audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+        let formData = new FormData();
+        formData.append("audio", audioBlob, "recording.webm");
+
+        let response = await fetch("/convert", {
+            method: "POST",
+            body: formData
+        });
+
+        let data = await response.json();
+        document.getElementById("result").innerText = data.text;
+    };
+
+    mediaRecorder.start();
+    document.getElementById("recordBtn").disabled = true;
+    document.getElementById("stopBtn").disabled = false;
+};
+
+document.getElementById("stopBtn").onclick = () => {
+    mediaRecorder.stop();
+    document.getElementById("recordBtn").disabled = false;
+    document.getElementById("stopBtn").disabled = true;
+};
+
+    </script>
+</body>
+</html>
